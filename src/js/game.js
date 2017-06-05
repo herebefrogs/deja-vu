@@ -9,18 +9,46 @@ const WIDTH = 400;
 const SPRITE_SIZE = 16;
 const CHARSET_SIZE = 8; // width & height in pixel of each letter in charset image
 const atlas = {
+  block: { sprites: { initial: { x: 48, y: 16 } } },
+  chest: {
+    sprites: {
+      initial: { x: 80, y: 0 },
+      altered: { x: 96, y: 0 }
+    }
+  },
+  crate: {
+    sprites: {
+      initial: { x: 48, y: 0 },
+      altered: { x: 64, y: 0 }
+    }
+  },
+  door_east: { sprites: { initial: { x: 32, y: 16 } } },
+  door_north: { sprites: { initial: { x: 0, y: 16 } } },
+  door_south: { sprites: { initial: { x: 16, y: 16 } } },
+  hammer: { sprites: { initial : { x: 32, y: 0 } } },
   hero: {
     speed: 30,
-    sprites: {
-      initial: { x: 0, y: 0 }
-    }
-  }
+    sprites: { initial: { x: 0, y: 0 } }
+  },
+  key: { sprites: { initial : { x: 16, y: 0 } } },
+  tile: { sprites: { initial: { x: 64, y: 16 } } },
+  wall_h: { sprites: { initial: { x: 80, y: 16 } } },
+  wall_v: { sprites: { initial: { x: 96, y: 16 } } }
 };
+const level = [
+  [ 'wall_h', 'wall_h', 'wall_h', 'door_north', 'wall_h', 'wall_h', 'wall_h' ],
+  [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'tile', 'wall_v' ],
+  [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'tile', 'door_east' ],
+  [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'tile', 'wall_v' ],
+  [ 'wall_h', 'wall_h', 'wall_h', 'door_south', 'wall_h', 'wall_h', 'wall_h' ]
+];
 const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789.:!-%';
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 const buffer = document.createElement('canvas');
 const buffer_ctx = buffer.getContext('2d');
+const bg = document.createElement('canvas');
+const bg_ctx = bg.getContext('2d');
 let charset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAAICAYAAACbO2brAAAB5klEQVR42uVa2YrDMAw07Fvf9v8/tqWwhTZY18zI9tJAWlLHiqJjPHI1fm8/d/Qcf4c3js6t6JAdUz0T1eeqR1WX2RxLTsY3nh7s/BPP7DspZGbsw+iS0bUSi6gt0Pcf4oOR7+bX88M6Xjd1jL87cNXzo2vF8yP5M4DMzp9dWzaM7HsNCPX8Dv/svq7YSGXfyng2NqJ7Mr5Vvb8SIBHZr3mWPUc1gLsB5P33bwRIhf3+6/gOgNs1v0IQojzxYgPJrysDVfqPAUmPHXoAmWHY5kLR4WDPAYoEt+RbhsisgDM5MwMrAJQByJMZWHeCIfMzMVqNj4h9VfMnC4CI/hkZWYC24r9iX5bpWfMigIwYrJmnqxlEJ4NEACwCSFS+l0AewF+/T2VAEYBUFjJFfFl2VJSAlg8rDBBlcSiAov7PgoiVH0j8ZBgiM474F2IwihK1k0Eie3irtxgY+yifn9njUpSI0QrP7nGx9mf1W72FU8kDRfwp7OPlsYIhsiW2t+iPXQ5mAvyEAGZLLBQgmT9pvH/Su/bY0BKoAyAt+50M4Ih9WYas8F9Fv26ArJbuHxUI0+aws82nugnLtHFU2xtWtqlU2zSybRJM6wjS5sG0kTD+725z6Y6FqI1I1YbTPd5ZYmfbg2ZyHuewlwnHUW0vAAAAAElFTkSuQmCC';
 let currentTime;
 let entities;
@@ -69,6 +97,18 @@ function constrainEntityToViewport(entity) {
   }
 };
 
+function createDoor(type, x, y) {
+  return {
+    collide: false,
+    state: 'initial',
+    type,
+    x: x * SPRITE_SIZE,
+    // skip 1 row for title and inventory
+    // TODO buffer should just be rendered 1 row down instead
+    y: (y+1) * SPRITE_SIZE
+  }
+};
+
 function createHero() {
   return {
     moveDown: 0,
@@ -89,7 +129,9 @@ function createHero() {
     state: 'initial',
     type: 'hero',
     x: SPRITE_SIZE,
-    y: SPRITE_SIZE
+    // skip 1 row for title and inventory
+    // TODO buffer should just be rendered 1 row down instead
+    y: 2* SPRITE_SIZE
   }
 };
 
@@ -97,9 +139,11 @@ function init() {
   // implicit window.
   addEventListener('resize', resize);
 
-  // set back buffer canvas size
+  // set back buffer and background canvas size
   buffer.width = WIDTH;
   buffer.height = HEIGHT;
+  bg.width = WIDTH;
+  bg.height = HEIGHT;
   // scale to fit visible canvas
   resize();
 
@@ -149,8 +193,27 @@ function loadGame() {
 
   hero = createHero();
   entities = [ hero ];
+  loadLevel(level);
 
   toggleLoop(true);
+};
+
+function loadLevel(level) {
+  for (let y = 0; y < level.length; y++) {
+    for (let x = 0; x < level[y].length; x++) {
+      let type = level[y][x];
+      if (type.includes('door', 0)) {
+        entities.push(createDoor(type, x, y));
+        type = 'tile';
+      }
+      const sprite = atlas[type].sprites.initial;
+      bg_ctx.drawImage(
+        tileset,
+        sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
+        x * SPRITE_SIZE, y * SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE
+      );
+    }
+  }
 };
 
 function loadTileset(tileset) {
@@ -175,8 +238,7 @@ function loop() {
 
 function render() {
   // clear buffer
-  buffer_ctx.fillStyle = "#000";
-  buffer_ctx.fillRect(0, 0, buffer.width, buffer.height);
+  buffer_ctx.drawImage(bg, 0, SPRITE_SIZE);
 
   // render active entities
   for (let entity of entities) {
@@ -214,9 +276,9 @@ function resize() {
   canvas.height = HEIGHT * scaleToFit;
 
   // disable smoothing on scaling
-  buffer_ctx.mozImageSmoothingEnabled = ctx.mozImageSmoothingEnabled = false;
-  buffer_ctx.msImageSmoothingEnabled = ctx.msImageSmoothingEnabled = false;
-  buffer_ctx.imageSmoothingEnabled = ctx.imageSmoothingEnabled = false;
+  bg_ctx.mozImageSmoothingEnabled = buffer_ctx.mozImageSmoothingEnabled = ctx.mozImageSmoothingEnabled = false;
+  bg_ctx.mozImageSmoothingEnabled = buffer_ctx.msImageSmoothingEnabled = ctx.msImageSmoothingEnabled = false;
+  bg_ctx.mozImageSmoothingEnabled = buffer_ctx.imageSmoothingEnabled = ctx.imageSmoothingEnabled = false;
 };
 
 function setEntityPosition(entity, elapsedTime) {
