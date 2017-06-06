@@ -99,8 +99,8 @@ function createHero() {
     moveLeft: 0,
     moveRight: 0,
     moveUp: 0,
-    inventory: {
-      current: {
+    items: {
+      now: {
         key: 1,
         hammer: 0
       },
@@ -182,8 +182,12 @@ function loadGame() {
 };
 
 function loadLevel(level) {
-  for (let y = 0; y < level.length; y++) {
-    for (let x = 0; x < level[y].length; x++) {
+  bg_ctx.fillStyle = "#000";
+  bg_ctx.fillRect(0, 0, bg.width, bg.height);
+
+  let x, y;
+  for (y = 0; y < level.length; y++) {
+    for (x = 0; x < level[y].length; x++) {
       let type = level[y][x];
 
       if (type !== 'tile') {
@@ -198,6 +202,23 @@ function loadLevel(level) {
       );
     }
   }
+
+  // TODO make that ugly math nicer to look at
+  renderText('items', 0, y * (SPRITE_SIZE + 1), bg_ctx);
+  let sprite = atlas.key.sprites.initial;
+  bg_ctx.drawImage(
+    tileset,
+    sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
+    6*CHARSET_SIZE, y*SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE
+  );
+  renderText(`x${hero.items.now.key}`, 6*CHARSET_SIZE + SPRITE_SIZE, y*(SPRITE_SIZE+1), bg_ctx);
+  sprite = atlas.hammer.sprites.initial;
+  bg_ctx.drawImage(
+    tileset,
+    sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
+    6*CHARSET_SIZE + 2*SPRITE_SIZE, y*SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE
+  );
+  renderText(`x${hero.items.now.hammer}`, 6*CHARSET_SIZE + 3*SPRITE_SIZE, y*(SPRITE_SIZE+1), bg_ctx);
 };
 
 function loadTileset(tileset) {
@@ -242,13 +263,13 @@ function renderEntity(entity) {
   );
 };
 
-function renderText(text, x, y) {
+function renderText(text, x, y, ctx) {
   for (let i = 0; i < text.length; i++) {
-    buffer_ctx.drawImage(
+    ctx.drawImage(
       charset,
       // TODO could memoize the characters index or hardcode a lookup table
       alphabet.indexOf(text[i])*CHARSET_SIZE, 0, CHARSET_SIZE, CHARSET_SIZE,
-      x + i*(CHARSET_SIZE + 1), y, CHARSET_SIZE, CHARSET_SIZE
+      x + i*(CHARSET_SIZE), y, CHARSET_SIZE, CHARSET_SIZE
     );
   }
 };
