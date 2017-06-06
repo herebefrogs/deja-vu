@@ -37,9 +37,9 @@ const atlas = {
 };
 const level = [
   [ 'wall_h', 'wall_h', 'wall_h', 'door_north', 'wall_h', 'wall_h', 'wall_h' ],
-  [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'tile', 'wall_v' ],
+  [ 'wall_v', 'tile', 'block', 'tile', 'tile', 'tile', 'wall_v' ],
   [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'tile', 'door_east' ],
-  [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'tile', 'wall_v' ],
+  [ 'wall_v', 'tile', 'tile', 'tile', 'chest', 'crate', 'wall_v' ],
   [ 'wall_h', 'wall_h', 'wall_h', 'door_south', 'wall_h', 'wall_h', 'wall_h' ]
 ];
 const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789.:!-%';
@@ -56,7 +56,7 @@ let hero;
 let lastTime;
 let requestId;
 let running;
-let tileset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAAAgCAYAAADKbvy8AAAAAXNSR0IArs4c6QAAAVlpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IlhNUCBDb3JlIDUuNC4wIj4KICAgPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4KICAgICAgPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIKICAgICAgICAgICAgeG1sbnM6dGlmZj0iaHR0cDovL25zLmFkb2JlLmNvbS90aWZmLzEuMC8iPgogICAgICAgICA8dGlmZjpPcmllbnRhdGlvbj4xPC90aWZmOk9yaWVudGF0aW9uPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KTMInWQAABSVJREFUaAXtWIty4jAMhBt+sf3I3kfmtCYb1kKKnTgBZq7uTGNbWr3WcoDrJR9TILoGe2/d+pqmKM6XxfRjnr4Tb5BhnCm/3V1U/0tBpq/nulz/XrF5GonGxbPTKrT74mpDt3+yCqlSMLd8LnYALiP4S1/Igff7FkLP/H/PJ2BN7gmcSBzAGTCNZkAA8np5sBgnK35F4oDrIegoAUPODeyLgNoUmxV5ck/g1Aa4ghn5pwQ2rx6rGgkEzjXkpjAMfhnFZwevmcccaYZvJQL72oGFvCfixEppaU+5yFFMWaIwK9qq+Zgz6cfO+gzJ89bA4eJcb5BsDn2P9978Fau2iK9qJgZKvWzdku+9TL6t3Ergw1FURdtDIBkjIM+fJJwIdork1TX1trpAgZIWPBA3t1Bc5szD0QS9UOHPky8jyjeOX3uMkgeSeeJQPMiy4e1gDeLOIg8dMzJG8SO+M6x24NUCtKa0v/omXNZzAmkVSofO9wGsrJFBkhkYrlt0LNdrT4sjjUFx6gOxo4OOOhzq551zJRBxlDp6AmdBeeDfWUOJAZn6DlFZy7+/NkleC0c533vA9QzGmem25BmuZ98TWJogujKRlB18dEiaFQJF58ExT7p2AQt7ZkL0weRBQmlsBkRB8iR5ifiU7RLfTstKYHWDlUTMKPLmjYW9iERefyie1qm6Ug2sZO6MtwlTH+w8jallQPHQxbW71omsjdottTOnxMEGahPpRvZ78cAqgSUGOIEBHVhH+6pjwV4nfK6VgT0uOTenLyESxUOCe0cvnsVWPzwwkX/d44G3uil8aQLVpYLuAV8RKPWmfvVsyUlSBXKLHh0HWV1aDuV0Q+nLLnAWT+eQIVkM1cfLQNeK8fM7utbPXyYPf8RtfTLeFq4iEB9e8P4jUUv7zFYobxl9pRyE+Wuv5X/mstR/FB/5Yv28TLvHy3S9Ba8EllcZDNGRXiOYzx9uPK/q+7A5OpVX8tFde1iQiSHWLxE3t7fgMzLqS/nuMtNtBnSmgr2DpuzEtvzi/YUxim/5OVN+M7YjsiKfqd7eDtng+x6P3X18x2EDVyfW0ffWO2D9P22N4Lde32FEQV69erfyFo+0mR1lfHFwzafX437ns5f8jGyEhRCy8LIwCmYG7k2hkKeOW4FE8sy52kUSid7N7/NE+cLyfeQ/HXk/WcFG9xFPiSFwiK2oNpnPousTz5Qb+2qGoemewiM591SPc7WT6VU/ZoM8FMqTB4PcJ8F08sonYsj8I0FNOIsLOpmNDPPJ+8unUJLXChZFRCf4TmzhjpKv+e8h8SPJs1OVdVhVt0DvxoRQmEp5ZcEirqj8NyLWb0k4KPIiwySSe/ZMJxyBXunALeTRcCGx/xMsYYc8P+oA+aJqhiCiJZ/1lbNOSDG9XKHq93e+rQJafEWSiJZcMVvnvwRurdir9I11HoA1l78ErlXnnTLPXtLGhxCIL9lb36PZF/OemhUsEkyS6rFxmE6rU1rylUA0Pc8nYeMEzpbx1aKXxIUARNH92Zchf9hTK4uK69qHGsmVJa/fsR4mcPFvgfeQSPIWXEeQqqJ4X6tSn4ZhfH99+uivDjbO1R3j0T01F8nLngEoU/2neaA3TKA6QXHKz1226buxFB7KppMlqLaiuZLn5bDZQwx0jibRx7J57dnLChToHUogAucvNCSSyXCf663PI8ijz08kUTnzPDFuPL3eMIE9px6OU73BHwOQUGobjpNBEiHegwcu7GQLaI2A8JcYGNs5/gFoq1/K7DxodAAAAABJRU5ErkJggg==';
+let tileset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAAAgCAYAAADKbvy8AAACZElEQVR42u2aCY7DIAxFe0nuf5Q/GqnTSY13TAJpI0VqQx1SP7ySx0M+wJzLHQ3AlSeMsdnjIjhOYjZEOA8KMKv93ylH5UcBaPM3x3ivw8PgmQAjenw+yxIARwGUA2SFMB8iIiv3APBpkemzQn6Wi/S47w4eOwPeiMPrAjMAEQTYyOLiPIj0mf5nDhDViSaftbDs4qEWyIMjGpUAwlB0FGArAhgBYFrbFgDxH5wPlqQCBPqHtdZCZ/4FMZACpMrjgEUAWvJXAzQTQcv6aGzyQugCsJ08PCIu9Dh2d4AiRCv2VQCkMD2/5QBK8LwAG3wxMbDm1LPUAqUbNvjiH41hXPyZCdBymxbASFJTBXAQfu/BXg9KvqsQm5HuMyBnWaBmkRYwTl4DqEGmyY+UGGXlqV46WCBmbpYRSqzifjMToKek0ADSz5EYKF2jC0SKkRF5tvcpATyzJ+oFiIHepVWIe+QlZUuxzgvQK98lL86uxTIAV2ylaXWkB2BEXm1kC27ktMPjalfuhVqnVWZ45LfeSvoDOJKGV8hfmoVa3RLonTV8unzVpmKDwyK5LH+oG94Gu+mF8mnlF8z/flNrUv6ael/cHGAUYoO8qqPzR/6PBit7TQQIx9aO9sCj8hkLaBm39wU4HyC8LswLfTWAA3FxG4BYFGDZm1HJuLgUwEjmuAzAaNIipMG3cKHh9H8RgEPjX4A3BZitAzMurEp+Vxc6ywLTdaBHedoDjsp/YhLzLSNWSGKKOzFDAL0v2M6UTxXyjg7+R9SBW7bSAtswq3ViyuvA7ZrZib20W7TSrt6Q3F3+6iTmBwuUWXZpC1bSAAAAAElFTkSuQmCC';
 
 // implicit window.
 addEventListener('load', init);
@@ -83,29 +83,13 @@ function changeVisibility(e) {
   toggleLoop(!event.target.hidden);
 };
 
-function constrainEntityToViewport(entity) {
-  if (entity.x <= 0) {
-    entity.x = 0;
-  } else if (entity.x + SPRITE_SIZE >= WIDTH) {
-    entity.x = WIDTH - SPRITE_SIZE;
-  }
-  // skip one tile vertically for title and inventory
-  if (entity.y <= SPRITE_SIZE) {
-    entity.y = SPRITE_SIZE;
-  } else if (entity.y >= HEIGHT - SPRITE_SIZE) {
-    entity.y = HEIGHT - SPRITE_SIZE;
-  }
-};
-
-function createDoor(type, x, y) {
+function createEntity(type, x, y) {
   return {
-    collide: false,
+    collide: type.indexOf('door') === -1,
     state: 'initial',
     type,
     x: x * SPRITE_SIZE,
-    // skip 1 row for title and inventory
-    // TODO buffer should just be rendered 1 row down instead
-    y: (y+1) * SPRITE_SIZE
+    y: y * SPRITE_SIZE
   }
 };
 
@@ -129,9 +113,7 @@ function createHero() {
     state: 'initial',
     type: 'hero',
     x: SPRITE_SIZE,
-    // skip 1 row for title and inventory
-    // TODO buffer should just be rendered 1 row down instead
-    y: 2* SPRITE_SIZE
+    y: SPRITE_SIZE
   }
 };
 
@@ -192,8 +174,9 @@ function loadGame() {
   document.addEventListener('visibilitychange', changeVisibility);
 
   hero = createHero();
-  entities = [ hero ];
+  entities = [];
   loadLevel(level);
+  entities.push(hero);
 
   toggleLoop(true);
 };
@@ -202,10 +185,11 @@ function loadLevel(level) {
   for (let y = 0; y < level.length; y++) {
     for (let x = 0; x < level[y].length; x++) {
       let type = level[y][x];
-      if (type.includes('door', 0)) {
-        entities.push(createDoor(type, x, y));
-        type = 'tile';
+
+      if (type !== 'tile') {
+        entities.push(createEntity(type, x, y));
       }
+
       const sprite = atlas[type].sprites.initial;
       bg_ctx.drawImage(
         tileset,
@@ -238,7 +222,7 @@ function loop() {
 
 function render() {
   // clear buffer
-  buffer_ctx.drawImage(bg, 0, SPRITE_SIZE);
+  buffer_ctx.drawImage(bg, 0, 0);
 
   // render active entities
   for (let entity of entities) {
@@ -331,20 +315,31 @@ function update(elapsedTime) {
     }
   }
 
-  // collision test between ninja and all the veggies's previous positions
+  setEntityPosition(hero, elapsedTime);
+
+  // collision test between hero and all the entities previous positions
   for (let entity of entities) {
-    if (entity === hero) continue;
+    if (entity === hero || !entity.collide) continue;
 
     // AABB collision test
-    // TODO use bounding box rather than sprite size
     if (hero.x < entity.x + SPRITE_SIZE &&
         hero.x + SPRITE_SIZE > entity.x &&
         hero.y < entity.y + SPRITE_SIZE &&
         hero.y + SPRITE_SIZE > entity.y) {
-      // collision!
+       // collision!
+       // FIXME doesn't work for diagonal move :(
+       if (hero.moveRight) {
+         hero.x -= hero.x + SPRITE_SIZE - entity.x;
+       }
+       if (hero.moveLeft) {
+         hero.x += entity.x + SPRITE_SIZE - hero.x;
+       }
+       if (hero.moveDown) {
+         hero.y -= hero.y + SPRITE_SIZE - entity.y;
+       }
+       if (hero.moveUp) {
+         hero.y += entity.y + SPRITE_SIZE - hero.y;
+       }
     }
   }
-
-  setEntityPosition(hero, elapsedTime);
-  constrainEntityToViewport(hero);
 };
