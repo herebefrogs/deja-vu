@@ -37,7 +37,7 @@ const atlas = {
 };
 const level = [
   [ 'wall_h', 'wall_h', 'wall_h', 'door_north', 'wall_h', 'wall_h', 'wall_h' ],
-  [ 'wall_v', 'tile', 'block', 'tile', 'tile', 'chest', 'wall_v' ],
+  [ 'wall_v', 'tile', 'block', 'tile', 'tile', 'chest.hammer', 'wall_v' ],
   [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'tile', 'door_east' ],
   [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'crate', 'wall_v' ],
   [ 'wall_h', 'wall_h', 'wall_h', 'door_south', 'wall_h', 'wall_h', 'wall_h' ]
@@ -55,6 +55,9 @@ let entryDoor;
 let exitDoor;
 let entities;
 let hero;
+let ITEMS_HEIGHT;
+let KEY_WIDTH;
+let HAMMER_WIDTH;
 let lastTime;
 let requestId;
 let resetDoor;
@@ -86,9 +89,10 @@ function changeVisibility(e) {
   toggleLoop(!event.target.hidden);
 };
 
-function createEntity(type, x, y) {
+function createEntity(type, x, y, item) {
   return {
     collide: type.indexOf('door') === -1,
+    item: item,
     state: 'initial',
     type,
     x: x * SPRITE_SIZE,
@@ -195,10 +199,11 @@ function loadLevel(level) {
   let x, y;
   for (y = 0; y < level.length; y++) {
     for (x = 0; x < level[y].length; x++) {
-      let type = level[y][x];
+      let [type, item] = level[y][x].split('.');
 
       if (type !== 'tile') {
-        const entity = createEntity(type, x, y);
+        // create entity
+        const entity = createEntity(type, x, y, item);
         if (type === 'door_north') {
           entryDoor = entity;
         } else if (type === 'door_south') {
@@ -209,6 +214,7 @@ function loadLevel(level) {
         entities.push(entity);
       }
 
+      // pre-render entity on background
       const sprite = atlas[type].sprites.initial;
       bg_ctx.drawImage(
         tileset,
@@ -222,21 +228,25 @@ function loadLevel(level) {
   entities.push(hero);
 
   // TODO make that ugly math nicer to look at
-  renderText('items', 0, y * (SPRITE_SIZE + 1), bg_ctx);
+  // pre-render inventory on background
+  ITEMS_HEIGHT = y*SPRITE_SIZE + CHARSET_SIZE/2;
+  const itemsWidth = 6*CHARSET_SIZE;
+  KEY_WIDTH = itemsWidth + SPRITE_SIZE;
+  HAMMER_WIDTH = KEY_WIDTH + 2*SPRITE_SIZE;
+
+  renderText('items', 0, ITEMS_HEIGHT, bg_ctx);
   let sprite = atlas.key.sprites.initial;
   bg_ctx.drawImage(
     tileset,
     sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
-    6*CHARSET_SIZE, y*SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE
+    itemsWidth, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
   );
-  renderText(`x${hero.items.now.key}`, 6*CHARSET_SIZE + SPRITE_SIZE, y*(SPRITE_SIZE+1), bg_ctx);
   sprite = atlas.hammer.sprites.initial;
   bg_ctx.drawImage(
     tileset,
     sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
-    6*CHARSET_SIZE + 2*SPRITE_SIZE, y*SPRITE_SIZE, SPRITE_SIZE, SPRITE_SIZE
+    HAMMER_WIDTH - SPRITE_SIZE, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
   );
-  renderText(`x${hero.items.now.hammer}`, 6*CHARSET_SIZE + 3*SPRITE_SIZE, y*(SPRITE_SIZE+1), bg_ctx);
 };
 
 function loadTileset(tileset) {
@@ -260,13 +270,17 @@ function loop() {
 };
 
 function render() {
-  // clear buffer
+  // render level
   buffer_ctx.drawImage(bg, 0, 0);
 
   // render active entities
   for (let entity of entities) {
     renderEntity(entity);
   }
+
+  // render items
+  renderText(`x${hero.items.now.key}`, KEY_WIDTH, ITEMS_HEIGHT);
+  renderText(`x${hero.items.now.hammer}`, HAMMER_WIDTH, ITEMS_HEIGHT);
 
   blit();
 };
@@ -399,6 +413,16 @@ function update(elapsedTime) {
        if (hero.moveUp) {
          hero.y += entity.y + SPRITE_SIZE - hero.y;
        }
+      if (entity.type === 'chest' && entity.item) {
+        // open chest and consumes a key
+        entity.state = 'altered';
+        hero.items.now.key--;
+        // increase current/max item by 1
+        hero.items.now[entity.item]++
+        hero.items.max[entity.item]++
+        // empty chest
+        entity.item = undefined;
+      }
     }
   }
 };
