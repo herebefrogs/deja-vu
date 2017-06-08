@@ -37,9 +37,9 @@ const atlas = {
 };
 const level = [
   [ 'wall_h', 'wall_h', 'wall_h', 'door_north', 'wall_h', 'wall_h', 'wall_h' ],
-  [ 'wall_v', 'tile', 'block', 'tile', 'tile', 'tile', 'wall_v' ],
+  [ 'wall_v', 'tile', 'block', 'tile', 'tile', 'chest', 'wall_v' ],
   [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'tile', 'door_east' ],
-  [ 'wall_v', 'tile', 'tile', 'tile', 'chest', 'crate', 'wall_v' ],
+  [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'crate', 'wall_v' ],
   [ 'wall_h', 'wall_h', 'wall_h', 'door_south', 'wall_h', 'wall_h', 'wall_h' ]
 ];
 const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789.:!-%';
@@ -51,10 +51,12 @@ const bg = document.createElement('canvas');
 const bg_ctx = bg.getContext('2d');
 let charset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAAICAYAAACbO2brAAAB5klEQVR42uVa2YrDMAw07Fvf9v8/tqWwhTZY18zI9tJAWlLHiqJjPHI1fm8/d/Qcf4c3js6t6JAdUz0T1eeqR1WX2RxLTsY3nh7s/BPP7DspZGbsw+iS0bUSi6gt0Pcf4oOR7+bX88M6Xjd1jL87cNXzo2vF8yP5M4DMzp9dWzaM7HsNCPX8Dv/svq7YSGXfyng2NqJ7Mr5Vvb8SIBHZr3mWPUc1gLsB5P33bwRIhf3+6/gOgNs1v0IQojzxYgPJrysDVfqPAUmPHXoAmWHY5kLR4WDPAYoEt+RbhsisgDM5MwMrAJQByJMZWHeCIfMzMVqNj4h9VfMnC4CI/hkZWYC24r9iX5bpWfMigIwYrJmnqxlEJ4NEACwCSFS+l0AewF+/T2VAEYBUFjJFfFl2VJSAlg8rDBBlcSiAov7PgoiVH0j8ZBgiM474F2IwihK1k0Eie3irtxgY+yifn9njUpSI0QrP7nGx9mf1W72FU8kDRfwp7OPlsYIhsiW2t+iPXQ5mAvyEAGZLLBQgmT9pvH/Su/bY0BKoAyAt+50M4Ih9WYas8F9Fv26ArJbuHxUI0+aws82nugnLtHFU2xtWtqlU2zSybRJM6wjS5sG0kTD+725z6Y6FqI1I1YbTPd5ZYmfbg2ZyHuewlwnHUW0vAAAAAElFTkSuQmCC';
 let currentTime;
+let entryDoor;
 let entities;
 let hero;
 let lastTime;
 let requestId;
+let resetDoor;
 let running;
 let tileset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAAAgCAYAAADKbvy8AAACZElEQVR42u2aCY7DIAxFe0nuf5Q/GqnTSY13TAJpI0VqQx1SP7ySx0M+wJzLHQ3AlSeMsdnjIjhOYjZEOA8KMKv93ylH5UcBaPM3x3ivw8PgmQAjenw+yxIARwGUA2SFMB8iIiv3APBpkemzQn6Wi/S47w4eOwPeiMPrAjMAEQTYyOLiPIj0mf5nDhDViSaftbDs4qEWyIMjGpUAwlB0FGArAhgBYFrbFgDxH5wPlqQCBPqHtdZCZ/4FMZACpMrjgEUAWvJXAzQTQcv6aGzyQugCsJ08PCIu9Dh2d4AiRCv2VQCkMD2/5QBK8LwAG3wxMbDm1LPUAqUbNvjiH41hXPyZCdBymxbASFJTBXAQfu/BXg9KvqsQm5HuMyBnWaBmkRYwTl4DqEGmyY+UGGXlqV46WCBmbpYRSqzifjMToKek0ADSz5EYKF2jC0SKkRF5tvcpATyzJ+oFiIHepVWIe+QlZUuxzgvQK98lL86uxTIAV2ylaXWkB2BEXm1kC27ktMPjalfuhVqnVWZ45LfeSvoDOJKGV8hfmoVa3RLonTV8unzVpmKDwyK5LH+oG94Gu+mF8mnlF8z/flNrUv6ael/cHGAUYoO8qqPzR/6PBit7TQQIx9aO9sCj8hkLaBm39wU4HyC8LswLfTWAA3FxG4BYFGDZm1HJuLgUwEjmuAzAaNIipMG3cKHh9H8RgEPjX4A3BZitAzMurEp+Vxc6ywLTdaBHedoDjsp/YhLzLSNWSGKKOzFDAL0v2M6UTxXyjg7+R9SBW7bSAtswq3ViyuvA7ZrZib20W7TSrt6Q3F3+6iTmBwuUWXZpC1bSAAAAAElFTkSuQmCC';
 
@@ -191,7 +193,13 @@ function loadLevel(level) {
       let type = level[y][x];
 
       if (type !== 'tile') {
-        entities.push(createEntity(type, x, y));
+        const entity = createEntity(type, x, y);
+        if (type === 'door_north') {
+          entryDoor = entity;
+        } else if (type == 'door_south') {
+          resetDoor = entity;
+        }
+        entities.push(entity);
       }
 
       const sprite = atlas[type].sprites.initial;
@@ -340,7 +348,21 @@ function update(elapsedTime) {
 
   // collision test between hero and all the entities previous positions
   for (let entity of entities) {
-    if (entity === hero || !entity.collide) continue;
+    if (entity === hero) continue;
+
+    if (entity === entryDoor) {
+      if (hero.y < entryDoor.y) {
+        hero.y = entryDoor.y;
+      }
+      continue;
+    }
+    if (entity === resetDoor) {
+      if (hero.y > resetDoor.y) {
+        // history repeats!
+        hero.y = entryDoor.y;
+      }
+      continue;
+    }
 
     // AABB collision test
     if (hero.x < entity.x + SPRITE_SIZE &&
