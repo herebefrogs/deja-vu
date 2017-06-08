@@ -115,8 +115,8 @@ function createHero() {
     speed: atlas.hero.speed,
     state: 'initial',
     type: 'hero',
-    x: SPRITE_SIZE,
-    y: SPRITE_SIZE
+    x: entryDoor.x,
+    y: entryDoor.y
   }
 };
 
@@ -182,10 +182,8 @@ function loadGame() {
   addEventListener('gamepaddisconnected', gamepadDisconnected);
   document.addEventListener('visibilitychange', changeVisibility);
 
-  hero = createHero();
   entities = [];
   loadLevel(level);
-  entities.push(hero);
 
   toggleLoop(true);
 };
@@ -219,6 +217,9 @@ function loadLevel(level) {
       );
     }
   }
+
+  hero = createHero();
+  entities.push(hero);
 
   // TODO make that ugly math nicer to look at
   renderText('items', 0, y * (SPRITE_SIZE + 1), bg_ctx);
