@@ -430,7 +430,7 @@ function update(elapsedTime) {
          hero.y += entity.y + SPRITE_SIZE - hero.y;
        }
       if (entity.type === 'chest' &&
-          entity.item) {
+          entity.state === 'initial') {
         // open chest and consumes a key
         entity.state = 'altered';
         hero.items.now.key--;
