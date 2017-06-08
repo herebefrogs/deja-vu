@@ -395,7 +395,8 @@ function update(elapsedTime) {
     }
 
     // AABB collision test
-    if (hero.x < entity.x + SPRITE_SIZE &&
+    if (entity.collide &&
+        hero.x < entity.x + SPRITE_SIZE &&
         hero.x + SPRITE_SIZE > entity.x &&
         hero.y < entity.y + SPRITE_SIZE &&
         hero.y + SPRITE_SIZE > entity.y) {
@@ -413,7 +414,8 @@ function update(elapsedTime) {
        if (hero.moveUp) {
          hero.y += entity.y + SPRITE_SIZE - hero.y;
        }
-      if (entity.type === 'chest' && entity.item) {
+      if (entity.type === 'chest' &&
+          entity.item) {
         // open chest and consumes a key
         entity.state = 'altered';
         hero.items.now.key--;
@@ -422,6 +424,14 @@ function update(elapsedTime) {
         hero.items.max[entity.item]++
         // empty chest
         entity.item = undefined;
+      }
+      else if (entity.type === 'crate' &&
+               entity.state === 'initial' &&
+               hero.items.now.hammer) {
+        // break crate and consumes a hammer
+        entity.state = 'altered';
+        entity.collide = false;
+        hero.items.now.hammer--;
       }
     }
   }
