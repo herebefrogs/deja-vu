@@ -52,6 +52,7 @@ const bg_ctx = bg.getContext('2d');
 let charset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAAICAYAAACbO2brAAAB5klEQVR42uVa2YrDMAw07Fvf9v8/tqWwhTZY18zI9tJAWlLHiqJjPHI1fm8/d/Qcf4c3js6t6JAdUz0T1eeqR1WX2RxLTsY3nh7s/BPP7DspZGbsw+iS0bUSi6gt0Pcf4oOR7+bX88M6Xjd1jL87cNXzo2vF8yP5M4DMzp9dWzaM7HsNCPX8Dv/svq7YSGXfyng2NqJ7Mr5Vvb8SIBHZr3mWPUc1gLsB5P33bwRIhf3+6/gOgNs1v0IQojzxYgPJrysDVfqPAUmPHXoAmWHY5kLR4WDPAYoEt+RbhsisgDM5MwMrAJQByJMZWHeCIfMzMVqNj4h9VfMnC4CI/hkZWYC24r9iX5bpWfMigIwYrJmnqxlEJ4NEACwCSFS+l0AewF+/T2VAEYBUFjJFfFl2VJSAlg8rDBBlcSiAov7PgoiVH0j8ZBgiM474F2IwihK1k0Eie3irtxgY+yifn9njUpSI0QrP7nGx9mf1W72FU8kDRfwp7OPlsYIhsiW2t+iPXQ5mAvyEAGZLLBQgmT9pvH/Su/bY0BKoAyAt+50M4Ih9WYas8F9Fv26ArJbuHxUI0+aws82nugnLtHFU2xtWtqlU2zSybRJM6wjS5sG0kTD+725z6Y6FqI1I1YbTPd5ZYmfbg2ZyHuewlwnHUW0vAAAAAElFTkSuQmCC';
 let currentTime;
 let entryDoor;
+let exitDoor;
 let entities;
 let hero;
 let lastTime;
@@ -118,6 +119,12 @@ function createHero() {
     y: SPRITE_SIZE
   }
 };
+
+function endGame() {
+  renderText('you won!', (exitDoor.x+SPRITE_SIZE)/2 - 4*CHARSET_SIZE, exitDoor.y + CHARSET_SIZE/2);
+  blit();
+  toggleLoop(false);
+}
 
 function init() {
   // implicit window.
@@ -196,8 +203,10 @@ function loadLevel(level) {
         const entity = createEntity(type, x, y);
         if (type === 'door_north') {
           entryDoor = entity;
-        } else if (type == 'door_south') {
+        } else if (type === 'door_south') {
           resetDoor = entity;
+        } else if (type === 'door_east') {
+          exitDoor = entity;
         }
         entities.push(entity);
       }
@@ -271,7 +280,7 @@ function renderEntity(entity) {
   );
 };
 
-function renderText(text, x, y, ctx) {
+function renderText(text, x, y, ctx = buffer_ctx) {
   for (let i = 0; i < text.length; i++) {
     ctx.drawImage(
       charset,
@@ -360,6 +369,12 @@ function update(elapsedTime) {
       if (hero.y > resetDoor.y) {
         // history repeats!
         hero.y = entryDoor.y;
+      }
+      continue;
+    }
+    if (entity === exitDoor) {
+      if (hero.x > exitDoor.x) {
+        endGame();
       }
       continue;
     }
