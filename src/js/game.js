@@ -306,6 +306,21 @@ function renderText(text, x, y, ctx = buffer_ctx) {
   }
 };
 
+function resetLevel() {
+  // move hero back
+  hero.y = entryDoor.y;
+  // reset his current items to max items
+  hero.items.now.key = hero.items.max.key;
+  hero.items.now.hammer = hero.items.max.hammer;
+  // close chests and repair crates
+  for (let entity of entities) {
+    if (entity.type === 'chest' || entity.type === 'crate') {
+      entity.state = 'initial';
+      entity.collide = true;
+    }
+  }
+};
+
 function resize() {
   // implicit window.
   const scaleToFit = Math.min(innerWidth / WIDTH, innerHeight / HEIGHT);
@@ -383,7 +398,7 @@ function update(elapsedTime) {
     if (entity === resetDoor) {
       if (hero.y > resetDoor.y) {
         // history repeats!
-        hero.y = entryDoor.y;
+        resetLevel();
       }
       continue;
     }
