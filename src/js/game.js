@@ -156,30 +156,56 @@ function init() {
 };
 
 function keyPressed(keyEvent) {
-  // Left arrow / A / Q
-  if (keyEvent.which === 37 || keyEvent.which === 65 ||keyEvent.which === 81) { hero.moveLeft = -1; }
-  // Up arrow / W / Z
-  if (keyEvent.which === 38 || keyEvent.which === 90 || keyEvent.which === 87) { hero.moveUp = -1; }
-  // Right arrow / D
-  if (keyEvent.which === 39 || keyEvent.which === 68) { hero.moveRight = 1; }
-  // Down arrow / S
-  if (keyEvent.which === 40 || keyEvent.which === 83) { hero.moveDown = 1; }
-
-  // P
-  if (keyEvent.which === 80) {
-    toggleLoop(!running);
+  switch (keyEvent.which) {
+    case 37: // Left arrow
+    case 65: // A - QWERTY
+    case 81: // Q - AZERTY
+      hero.moveLeft = -1;
+      hero.moveUp = hero.moveDown = 0;
+      break;
+    case 38: // Up arrow
+    case 90: // W - QWERTY
+    case 87: // Z - AZERTY
+      hero.moveUp = -1;
+      hero.moveLeft = hero.moveRight = 0;
+      break;
+    case 39: // Right arrow
+    case 68: // D
+      hero.moveRight = 1;
+      hero.moveUp = hero.moveDown = 0;
+      break;
+    case 40: // Down arrow
+    case 83: // S
+      hero.moveDown = 1;
+      hero.moveLeft = hero.moveRight = 0;
+      break;
+    case 80: // P
+      toggleLoop(!running);
+      break;
   }
 };
 
 function keyReleased(keyEvent) {
-  // Left arrow / A / Q
-  if (keyEvent.which === 37 || keyEvent.which === 65 || keyEvent.which === 81) { hero.moveLeft = 0; }
-  // Up arrow / W / Z
-  if (keyEvent.which === 38 || keyEvent.which === 90 || keyEvent.which === 87) { hero.moveUp = 0; }
-  // Right arrow / D
-  if (keyEvent.which === 39 || keyEvent.which === 68) { hero.moveRight = 0; }
-  // Down arrow / S
-  if (keyEvent.which === 40 || keyEvent.which === 83) { hero.moveDown = 0; }
+  switch (keyEvent.which) {
+    case 37: // Left arrow
+    case 65: // A - QWERTY
+    case 81: // Q - AZERTY
+      hero.moveLeft = 0;
+      break;
+    case 38: // Up arrow
+    case 90: // W - QWERTY
+    case 87: // Z - AZERTY
+      hero.moveUp = 0;
+      break;
+    case 39: // Right arrow
+    case 68: // D
+      hero.moveRight = 0;
+      break;
+    case 40: // Down arrow
+    case 83: // S
+      hero.moveDown = 0;
+      break;
+  }
 };
 
 function loadGame() {
