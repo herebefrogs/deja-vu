@@ -25,12 +25,12 @@ const atlas = {
   door_east: { sprites: { initial: { x: 32, y: 16 } } },
   door_north: { sprites: { initial: { x: 0, y: 16 } } },
   door_south: { sprites: { initial: { x: 16, y: 16 } } },
-  hammer: { sprites: { initial : { x: 32, y: 0 } } },
+  hammer: { sprites: [ { x: 32, y: 0 } ] },
   hero: {
     speed: 30,
     sprites: { initial: { x: 0, y: 0 } }
   },
-  key: { sprites: { initial : { x: 16, y: 0 } } },
+  key: { sprites: [ { x: 16, y: 0 } ] },
   tile: { sprites: { initial: { x: 64, y: 16 } } },
   wall_h: { sprites: { initial: { x: 80, y: 16 } } },
   wall_v: { sprites: { initial: { x: 96, y: 16 } } }
@@ -53,11 +53,13 @@ const buffer = document.createElement('canvas');
 const buffer_ctx = buffer.getContext('2d');
 const bg = document.createElement('canvas');
 const bg_ctx = bg.getContext('2d');
+const FRAME_DURATION = 0.4; // in seconds
 let charset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAAICAYAAACbO2brAAAB5klEQVR42uVa2YrDMAw07Fvf9v8/tqWwhTZY18zI9tJAWlLHiqJjPHI1fm8/d/Qcf4c3js6t6JAdUz0T1eeqR1WX2RxLTsY3nh7s/BPP7DspZGbsw+iS0bUSi6gt0Pcf4oOR7+bX88M6Xjd1jL87cNXzo2vF8yP5M4DMzp9dWzaM7HsNCPX8Dv/svq7YSGXfyng2NqJ7Mr5Vvb8SIBHZr3mWPUc1gLsB5P33bwRIhf3+6/gOgNs1v0IQojzxYgPJrysDVfqPAUmPHXoAmWHY5kLR4WDPAYoEt+RbhsisgDM5MwMrAJQByJMZWHeCIfMzMVqNj4h9VfMnC4CI/hkZWYC24r9iX5bpWfMigIwYrJmnqxlEJ4NEACwCSFS+l0AewF+/T2VAEYBUFjJFfFl2VJSAlg8rDBBlcSiAov7PgoiVH0j8ZBgiM474F2IwihK1k0Eie3irtxgY+yifn9njUpSI0QrP7nGx9mf1W72FU8kDRfwp7OPlsYIhsiW2t+iPXQ5mAvyEAGZLLBQgmT9pvH/Su/bY0BKoAyAt+50M4Ih9WYas8F9Fv26ArJbuHxUI0+aws82nugnLtHFU2xtWtqlU2zSybRJM6wjS5sG0kTD+725z6Y6FqI1I1YbTPd5ZYmfbg2ZyHuewlwnHUW0vAAAAAElFTkSuQmCC';
 let currentTime;
 let entryDoor;
 let exitDoor;
 let entities;
+let animatedEntities;
 let hero;
 let ITEMS_HEIGHT;
 let KEY_WIDTH;
@@ -91,6 +93,16 @@ function changeVisibility(e) {
   }
 
   toggleLoop(!event.target.hidden);
+};
+
+function createAnimatedEntity(type, x, y) {
+  return {
+    frame: 0,
+    nextFrame: 0,
+    type,
+    x,
+    y
+  }
 };
 
 function createEntity(type, x, y, item) {
@@ -217,6 +229,7 @@ function loadGame() {
   document.addEventListener('visibilitychange', changeVisibility);
 
   entities = [];
+  animatedEntities = [];
   loadLevel(level);
 
   toggleLoop(true);
@@ -265,13 +278,13 @@ function loadLevel(level) {
   HAMMER_WIDTH = KEY_WIDTH + 2*SPRITE_SIZE;
 
   renderText('items', 0, ITEMS_HEIGHT, bg_ctx);
-  let sprite = atlas.key.sprites.initial;
+  let sprite = atlas.key.sprites[0];
   bg_ctx.drawImage(
     tileset,
     sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
     itemsWidth, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
   );
-  sprite = atlas.hammer.sprites.initial;
+  sprite = atlas.hammer.sprites[0];
   bg_ctx.drawImage(
     tileset,
     sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
@@ -308,11 +321,24 @@ function render() {
     renderEntity(entity);
   }
 
+  for (let entity of animatedEntities) {
+    renderAnimatedEntity(entity);
+  }
+
   // render items
   renderText(`x${hero.items.now.key}`, KEY_WIDTH, ITEMS_HEIGHT);
   renderText(`x${hero.items.now.hammer}`, HAMMER_WIDTH, ITEMS_HEIGHT);
 
   blit();
+};
+
+function renderAnimatedEntity(entity) {
+  const sprite = atlas[entity.type].sprites[entity.frame];
+  buffer_ctx.drawImage(
+    tileset,
+    sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
+    Math.round(entity.x), Math.round(entity.y), SPRITE_SIZE, SPRITE_SIZE
+  );
 };
 
 // render an entity onto the backbuffer at 1:1 scale
@@ -465,11 +491,15 @@ function update(elapsedTime) {
         // open chest and consumes a key
         entity.state = 'altered';
         hero.items.now.key--;
-        // increase current/max item by 1
-        hero.items.now[entity.item]++
-        hero.items.max[entity.item]++
-        // empty chest
-        entity.item = undefined;
+        if (entity.item) {
+          // increase current/max item by 1
+          hero.items.now[entity.item]++
+          hero.items.max[entity.item]++
+          // show item
+          animatedEntities.push(createAnimatedEntity(entity.item, entity.x, entity.y - SPRITE_SIZE));
+          // empty chest
+          entity.item = undefined;
+        }
       }
       else if (entity.type === 'crate' &&
                entity.state === 'initial' &&
@@ -478,6 +508,17 @@ function update(elapsedTime) {
         entity.state = 'altered';
         entity.collide = false;
         hero.items.now.hammer--;
+      }
+    }
+  }
+
+  for (let [index, entity] of animatedEntities.entries()) {
+    entity.nextFrame += elapsedTime;
+    if (entity.nextFrame > FRAME_DURATION) {
+      entity.nextFrame -= FRAME_DURATION;
+      entity.frame++;
+      if (entity.frame >= atlas[entity.type].sprites.length) {
+        animatedEntities.splice(index, 1);
       }
     }
   }
