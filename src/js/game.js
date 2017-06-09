@@ -4,8 +4,8 @@ import { gamepad, gamepadConnected, gamepadDisconnected, gamepadPollData } from 
 document.title = "CGA Jam";
 
 // global variables
-const HEIGHT = 300;
-const WIDTH = 400;
+const HEIGHT = 160;
+const WIDTH = 176;
 const SPRITE_SIZE = 16;
 const CHARSET_SIZE = 8; // width & height in pixel of each letter in charset image
 const atlas = {
