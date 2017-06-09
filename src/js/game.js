@@ -36,11 +36,15 @@ const atlas = {
   wall_v: { sprites: { initial: { x: 96, y: 16 } } }
 };
 const level = [
-  [ 'wall_h', 'wall_h', 'wall_h', 'door_north', 'wall_h', 'wall_h', 'wall_h' ],
-  [ 'wall_v', 'tile', 'block', 'tile', 'tile', 'chest.hammer', 'wall_v' ],
-  [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'tile', 'door_east' ],
-  [ 'wall_v', 'tile', 'tile', 'tile', 'tile', 'crate', 'wall_v' ],
-  [ 'wall_h', 'wall_h', 'wall_h', 'door_south', 'wall_h', 'wall_h', 'wall_h' ]
+  [ 'wall_h', 'wall_h', 'door_north', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h' ],
+  [ 'wall_v', 'block', 'tile', 'block', 'chest.hammer', 'tile', 'crate', 'tile', 'tile', 'chest.hammer', 'wall_v' ],
+  [ 'wall_v', 'tile', 'tile', 'block', 'block', 'tile', 'tile', 'block', 'tile', 'tile', 'wall_v' ],
+  [ 'wall_v', 'tile', 'tile', 'tile', 'crate', 'tile', 'crate', 'chest.key', 'block', 'crate', 'wall_v' ],
+  [ 'wall_v', 'chest.hammer', 'tile', 'tile', 'block', 'block', 'tile', 'tile', 'crate', 'crate', 'door_east' ],
+  [ 'wall_v', 'tile', 'tile', 'block', 'block', 'block', 'crate', 'tile', 'block', 'crate', 'wall_v' ],
+  [ 'wall_v', 'tile', 'tile', 'tile', 'crate', 'tile', 'tile', 'crate', 'tile', 'tile', 'wall_v' ],
+  [ 'wall_v', 'block', 'tile', 'tile', 'tile', 'block', 'block', 'chest.key', 'block', 'chest.hammer', 'wall_v' ],
+  [ 'wall_h', 'wall_h', 'door_south', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h' ]
 ];
 const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789.:!-%';
 const canvas = document.querySelector('canvas');
