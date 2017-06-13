@@ -28,6 +28,7 @@ const atlas = {
   hammer: { sprites: [ { x: 32, y: 0 } ] },
   hero: {
     speed: 30,
+    bounds: { x: 2, y: 1, w: 13, h: 15 },
     sprites: { initial: { x: 0, y: 0 } }
   },
   key: { sprites: [ { x: 16, y: 0 } ] },
@@ -68,7 +69,7 @@ let lastTime;
 let requestId;
 let resetDoor;
 let running;
-let tileset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAAAgCAYAAADKbvy8AAACZElEQVR42u2aCY7DIAxFe0nuf5Q/GqnTSY13TAJpI0VqQx1SP7ySx0M+wJzLHQ3AlSeMsdnjIjhOYjZEOA8KMKv93ylH5UcBaPM3x3ivw8PgmQAjenw+yxIARwGUA2SFMB8iIiv3APBpkemzQn6Wi/S47w4eOwPeiMPrAjMAEQTYyOLiPIj0mf5nDhDViSaftbDs4qEWyIMjGpUAwlB0FGArAhgBYFrbFgDxH5wPlqQCBPqHtdZCZ/4FMZACpMrjgEUAWvJXAzQTQcv6aGzyQugCsJ08PCIu9Dh2d4AiRCv2VQCkMD2/5QBK8LwAG3wxMbDm1LPUAqUbNvjiH41hXPyZCdBymxbASFJTBXAQfu/BXg9KvqsQm5HuMyBnWaBmkRYwTl4DqEGmyY+UGGXlqV46WCBmbpYRSqzifjMToKek0ADSz5EYKF2jC0SKkRF5tvcpATyzJ+oFiIHepVWIe+QlZUuxzgvQK98lL86uxTIAV2ylaXWkB2BEXm1kC27ktMPjalfuhVqnVWZ45LfeSvoDOJKGV8hfmoVa3RLonTV8unzVpmKDwyK5LH+oG94Gu+mF8mnlF8z/flNrUv6ael/cHGAUYoO8qqPzR/6PBit7TQQIx9aO9sCj8hkLaBm39wU4HyC8LswLfTWAA3FxG4BYFGDZm1HJuLgUwEjmuAzAaNIipMG3cKHh9H8RgEPjX4A3BZitAzMurEp+Vxc6ywLTdaBHedoDjsp/YhLzLSNWSGKKOzFDAL0v2M6UTxXyjg7+R9SBW7bSAtswq3ViyuvA7ZrZib20W7TSrt6Q3F3+6iTmBwuUWXZpC1bSAAAAAElFTkSuQmCC';
+let tileset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAAAgCAYAAADKbvy8AAACZUlEQVR42u2aC2rDMAxAc0nd/ygag0FdRX/Ji50kYGiTqnb1rK97HJtfgIhXDjSezX4u6QWZMf1C50UBZrX/O2VVvgpAmx8cz3k9CoudDc+96+Gz8KsBVgF0AzQX/B8AzZ07APyzyPTokJ/lIj3u+wSPpY4+iJqr8wLEIEAgaxt3p/WaWhAHiOpCk89aWHbzUAvkwQ3aHCZzucBR0VGA0AQwAsC0ttUBsuAIRA4g4nmx1ledzb8eAylAqjwOWASgJb8GQPxkV9x7DSCNTV4IXy7AlzwcERc6PrszwHMYg5PFqO6zCpDC9HyWAyjB8wIE9MXEwJ5TRydAsRyzkhcps+Liz0yAltu0AEaSmi6ARfi8F6OLBgsiGOk+A3KWBWoWaQHj5DWAGmSa/EiJUVae6uUL1Fg9RCBKsYr7zEyAnpJCA0hfR2KgdI9uEClGRuRPrnPUMRI/bbnS1sLeCRALvUurEPfIS8qWYp0XoFee7YEau/BYCeCKrTStjvQAjMgv1cyW3K11GrFqL9QaVpnhkd/9NOmopuEd8pdmoVa3BPXGDD5dvutQEdBhkVyWX+qGQ7Gb3iifVn7D/FLjg5+Uv6d+L94cYBQioLyro/NHfo8GK3tPBIiOox1twVX5jAVAxu29AOcDRK8L80JfDWAhLm4DEBcF2PbPqGRcXApgJHNcBmA0aRHS4Fu40HD6vwjA0vMX4E0BZuvAjAvrkt/Vhc6ywHQd6FGetsCq/BOTmLeMWCGJae7ElAB6/2A7Uz5VyDs6+I+oA7dspQWOYVbrxLTXgds1sxNnabdopV19ILm7/NVJzA/6EThCNXCEzQAAAABJRU5ErkJggg==';
 
 // implicit window.
 addEventListener('load', init);
@@ -118,6 +119,7 @@ function createEntity(type, x, y, item) {
 
 function createHero() {
   return {
+    bounds: atlas.hero.bounds,
     moveDown: 0,
     moveLeft: 0,
     moveRight: 0,
@@ -446,20 +448,20 @@ function update(elapsedTime) {
     if (entity === hero) continue;
 
     if (entity === entryDoor) {
-      if (hero.y < entryDoor.y) {
-        hero.y = entryDoor.y;
+      if (hero.y + hero.bounds.y < entryDoor.y) {
+        hero.y = entryDoor.y - hero.bounds.y;
       }
       continue;
     }
     if (entity === resetDoor) {
-      if (hero.y > resetDoor.y) {
+      if (hero.y + hero.bounds.h > resetDoor.y + SPRITE_SIZE) {
         // history repeats!
         resetLevel();
       }
       continue;
     }
     if (entity === exitDoor) {
-      if (hero.x > exitDoor.x) {
+      if (hero.x + hero.bounds.w > exitDoor.x + SPRITE_SIZE) {
         endGame();
       }
       continue;
@@ -467,23 +469,23 @@ function update(elapsedTime) {
 
     // AABB collision test
     if (entity.collide &&
-        hero.x < entity.x + SPRITE_SIZE &&
-        hero.x + SPRITE_SIZE > entity.x &&
-        hero.y < entity.y + SPRITE_SIZE &&
-        hero.y + SPRITE_SIZE > entity.y) {
+        hero.x + hero.bounds.x < entity.x + SPRITE_SIZE &&
+        hero.x + hero.bounds.w > entity.x &&
+        hero.y + hero.bounds.y < entity.y + SPRITE_SIZE &&
+        hero.y + hero.bounds.h > entity.y) {
        // collision!
        // FIXME doesn't work for diagonal move :(
        if (hero.moveRight) {
-         hero.x -= hero.x + SPRITE_SIZE - entity.x;
+         hero.x -= hero.x + hero.bounds.w - entity.x;
        }
        if (hero.moveLeft) {
-         hero.x += entity.x + SPRITE_SIZE - hero.x;
+         hero.x += entity.x + SPRITE_SIZE - hero.x - hero.bounds.x;
        }
        if (hero.moveDown) {
-         hero.y -= hero.y + SPRITE_SIZE - entity.y;
+         hero.y -= hero.y + hero.bounds.h - entity.y;
        }
        if (hero.moveUp) {
-         hero.y += entity.y + SPRITE_SIZE - hero.y;
+         hero.y += entity.y + SPRITE_SIZE - hero.y - hero.bounds.y;
        }
       if (entity.type === 'chest' &&
           entity.state === 'initial' &&
