@@ -25,7 +25,7 @@ const atlas = {
   door_east: { sprites: { initial: { x: 32, y: 16 } } },
   door_north: { sprites: { initial: { x: 0, y: 16 } } },
   door_south: { sprites: { initial: { x: 16, y: 16 } } },
-  hammer: { sprites: [ { x: 32, y: 0 } ] },
+  sword: { sprites: [ { x: 32, y: 0 } ] },
   hero: {
     speed: 30,
     bounds: { x: 2, y: 1, w: 13, h: 15 },
@@ -38,13 +38,13 @@ const atlas = {
 };
 const level = [
   [ 'wall_h', 'wall_h', 'door_north', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h' ],
-  [ 'wall_v', 'block', 'tile', 'block', 'chest.hammer', 'tile', 'crate', 'tile', 'tile', 'chest.hammer', 'wall_v' ],
+  [ 'wall_v', 'block', 'tile', 'block', 'chest.sword', 'tile', 'crate', 'tile', 'tile', 'chest.sword', 'wall_v' ],
   [ 'wall_v', 'tile', 'tile', 'block', 'block', 'tile', 'tile', 'block', 'tile', 'tile', 'wall_v' ],
   [ 'wall_v', 'tile', 'tile', 'tile', 'crate', 'tile', 'crate', 'chest.key', 'block', 'crate', 'wall_v' ],
-  [ 'wall_v', 'chest.hammer', 'tile', 'tile', 'block', 'block', 'tile', 'tile', 'crate', 'crate', 'door_east' ],
+  [ 'wall_v', 'chest.sword', 'tile', 'tile', 'block', 'block', 'tile', 'tile', 'crate', 'crate', 'door_east' ],
   [ 'wall_v', 'tile', 'tile', 'block', 'block', 'block', 'crate', 'tile', 'block', 'crate', 'wall_v' ],
   [ 'wall_v', 'tile', 'tile', 'tile', 'crate', 'tile', 'tile', 'crate', 'tile', 'tile', 'wall_v' ],
-  [ 'wall_v', 'block', 'tile', 'tile', 'tile', 'block', 'block', 'chest.key', 'block', 'chest.hammer', 'wall_v' ],
+  [ 'wall_v', 'block', 'tile', 'tile', 'tile', 'block', 'block', 'chest.key', 'block', 'chest.sword', 'wall_v' ],
   [ 'wall_h', 'wall_h', 'door_south', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h', 'wall_h' ]
 ];
 const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789.:!-%';
@@ -64,12 +64,12 @@ let animatedEntities;
 let hero;
 let ITEMS_HEIGHT;
 let KEY_WIDTH;
-let HAMMER_WIDTH;
+let SWORD_WIDTH;
 let lastTime;
 let requestId;
 let resetDoor;
 let running;
-let tileset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAAAgCAYAAADKbvy8AAACZUlEQVR42u2aC2rDMAxAc0nd/ygag0FdRX/Ji50kYGiTqnb1rK97HJtfgIhXDjSezX4u6QWZMf1C50UBZrX/O2VVvgpAmx8cz3k9CoudDc+96+Gz8KsBVgF0AzQX/B8AzZ07APyzyPTokJ/lIj3u+wSPpY4+iJqr8wLEIEAgaxt3p/WaWhAHiOpCk89aWHbzUAvkwQ3aHCZzucBR0VGA0AQwAsC0ttUBsuAIRA4g4nmx1ledzb8eAylAqjwOWASgJb8GQPxkV9x7DSCNTV4IXy7AlzwcERc6PrszwHMYg5PFqO6zCpDC9HyWAyjB8wIE9MXEwJ5TRydAsRyzkhcps+Liz0yAltu0AEaSmi6ARfi8F6OLBgsiGOk+A3KWBWoWaQHj5DWAGmSa/EiJUVae6uUL1Fg9RCBKsYr7zEyAnpJCA0hfR2KgdI9uEClGRuRPrnPUMRI/bbnS1sLeCRALvUurEPfIS8qWYp0XoFee7YEau/BYCeCKrTStjvQAjMgv1cyW3K11GrFqL9QaVpnhkd/9NOmopuEd8pdmoVa3BPXGDD5dvutQEdBhkVyWX+qGQ7Gb3iifVn7D/FLjg5+Uv6d+L94cYBQioLyro/NHfo8GK3tPBIiOox1twVX5jAVAxu29AOcDRK8L80JfDWAhLm4DEBcF2PbPqGRcXApgJHNcBmA0aRHS4Fu40HD6vwjA0vMX4E0BZuvAjAvrkt/Vhc6ywHQd6FGetsCq/BOTmLeMWCGJae7ElAB6/2A7Uz5VyDs6+I+oA7dspQWOYVbrxLTXgds1sxNnabdopV19ILm7/NVJzA/6EThCNXCEzQAAAABJRU5ErkJggg==';
+let tileset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAABQCAYAAADBTPF9AAAEmklEQVR42u2dia7lIAhA+5P+/6cwmWQWnwKyubWQ3GRe72BbjiDSen2ey6UAwM4PDL6b/T1lF0A+2wUa+QvQav3fTXr1vQC48xfB97idiIvdDe+HYcoZAL0AogEOL/gEeKUC+McTzZ8I/VkhUhK+O3godZBBxELcDHiF8MC6A9bHqX+3HoQBam3B6Vs9zNp5Wg/EwVXdpDoZa+jWyLPgSQBqAAy97XSAKLgGIgawNe6Pi2fEC28EsDUeBkwDcKR/BkD4n11hf3MAa+OOYnsLooYqhScNofV3bwbYD2Ol8xg2fHoBdsAE4RgDSMGTAiwgGxP//u39RALEchEWHpriA9772nGpa6fgk2NuLB15RHtsBFCT1EQBdMLvbNj1iuYYDrHwXoaBRHuOALQkhFIeOQKG6XMAOcht8kMlRlb9LorVoGpP0EBsDMD+Hy4RkmaxFADJlIID2P5bMwZSx9oOQo2RGv3OAWobQxOnR6HUO12gjC3NVrW1y9FEXKJPGZsa66QApfpoDXTQC+dWWpCwK/XAU0pp3DxSAlCjf0wxWwLrFoDSz2iaIdG//WnS403DI/S3ZqGjagnwhRn4un7UQ8UCAo/EsnxXNbw4q+mB+mbjB5yfKnzgJ8WPse3CywFqIRage7X2/Jr74WBZj5EAqXAjvWCvvsUDiiXsJcD5AEEawqTQTwPoGBevAQiHAgx7M8o4Lh4FUJM5HgNQm7QQafArQqg6/T8EoOv7BPhSgNZ5oCWERenfGkJneaB5HigxHneBXv0vJjE5jTghiQmuxLgAil5MHYUIp75pIi+o4H9iHnhlKU3xGOa0Skz4PPC6YrbhWdorSmm7H0jerr89iUlJSUlJSUnBF5rsbCOqLe+6RYue55pd9wsBWU47g5/xzqhF39KO5fyea3bdr7SuqerxSmNJ6qei1TjEIhttOxb4ENBZTPaHwVOGVTfATZApw0uXslnaGZ1/xv2DcFleAnwjwEKsFFoNcLRkbbQ4BlvqXYQAqYUmy0OoIPST6/z+/ZRHWQ+wPveoLaweit2Pph3OHlOTmEIv9BG3h67fK7qs0pKBkmsHB21p1iRK2om8l8iFPhFZfUpKSkpKSkrKPWKpbYKxDmipoQLIsszVNdyojNF9XbBhImupoUYU4SNeV4Dg1x7CCtynVuMB5D/NtcL4kQDdbd0EMALiqwCuDoVvgXhMKL4JYCTEVwDcaYCZEKWZnPf+vdnsNu87YRzhIFozac00xZtNu7JqOCQRoIxo0dU+kO6y27JhGmWFV5hnazsAejoUAL7BhqczSwHCwvORDRRjHI8aA6j1AZbOZPEiIFbTzgYYAtHyJHraGOjoSNg7LdrfIYUN82CT/SNDaERNMSKE1h5jKQlazh81/XJ53ylF4SlFZpg7JLhDaL468SFxrXE/4PsECI4VrAEAZuyf9ykpDgAr9sdLgAs8cKd+euBmD4reeiYBbgD4BG/+lAAXelACnJjErACQAAMAPps3zkiAmz3wpP3zPjmTeBz73x2gnx64c/+7yP3zEuCG/e+i989LgIv3v5u1f17OAy/5uccEmFno1fILjM8aJIZzqx4AAAAASUVORK5CYII=';
 
 // implicit window.
 addEventListener('load', init);
@@ -127,11 +127,11 @@ function createHero() {
     items: {
       now: {
         key: 1,
-        hammer: 0
+        sword: 0
       },
       max: {
         key: 1,
-        hammer: 0
+        sword: 0
       }
     },
     speed: atlas.hero.speed,
@@ -277,7 +277,7 @@ function loadLevel(level) {
   ITEMS_HEIGHT = y*SPRITE_SIZE + CHARSET_SIZE/2;
   const itemsWidth = 6*CHARSET_SIZE;
   KEY_WIDTH = itemsWidth + SPRITE_SIZE;
-  HAMMER_WIDTH = KEY_WIDTH + 2*SPRITE_SIZE;
+  SWORD_WIDTH = KEY_WIDTH + 2*SPRITE_SIZE;
 
   renderText('items', 0, ITEMS_HEIGHT, bg_ctx);
   let sprite = atlas.key.sprites[0];
@@ -286,11 +286,11 @@ function loadLevel(level) {
     sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
     itemsWidth, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
   );
-  sprite = atlas.hammer.sprites[0];
+  sprite = atlas.sword.sprites[0];
   bg_ctx.drawImage(
     tileset,
     sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
-    HAMMER_WIDTH - SPRITE_SIZE, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
+    SWORD_WIDTH - SPRITE_SIZE, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
   );
 };
 
@@ -329,7 +329,7 @@ function render() {
 
   // render items
   renderText(`x${hero.items.now.key}`, KEY_WIDTH, ITEMS_HEIGHT);
-  renderText(`x${hero.items.now.hammer}`, HAMMER_WIDTH, ITEMS_HEIGHT);
+  renderText(`x${hero.items.now.sword}`, SWORD_WIDTH, ITEMS_HEIGHT);
 
   blit();
 };
@@ -369,7 +369,7 @@ function resetLevel() {
   hero.y = entryDoor.y;
   // reset his current items to max items
   hero.items.now.key = hero.items.max.key;
-  hero.items.now.hammer = hero.items.max.hammer;
+  hero.items.now.sword = hero.items.max.sword;
   // close chests and repair crates
   for (let entity of entities) {
     if (entity.type === 'chest' || entity.type === 'crate') {
@@ -505,11 +505,11 @@ function update(elapsedTime) {
       }
       else if (entity.type === 'crate' &&
                entity.state === 'initial' &&
-               hero.items.now.hammer) {
-        // break crate and consumes a hammer
+               hero.items.now.sword) {
+        // break crate and consumes a sword
         entity.state = 'altered';
         entity.collide = false;
-        hero.items.now.hammer--;
+        hero.items.now.sword--;
       }
     }
   }
