@@ -1,9 +1,10 @@
 import rand from './util';
 import { gamepad, gamepadConnected, gamepadDisconnected, gamepadPollData } from './gamepad';
 
-document.title = "CGA Jam";
+document.title = 'Deja Vu';
 
 // global variables
+const BLACK = '#000';
 const HEIGHT = 160;
 const WIDTH = 176;
 const SPRITE_SIZE = 16;
@@ -166,7 +167,7 @@ function init() {
   .then(function() { return loadTileset(charset); })
   .then(function(img) { charset = img; })
   // start game
-  .then(loadGame);
+  .then(loadTitle);
 };
 
 function keyPressed(keyEvent) {
@@ -222,8 +223,16 @@ function keyReleased(keyEvent) {
   }
 };
 
+function loadTitle() {
+  addEventListener('keydown', newGame);
+  addEventListener('resize', renderTitle);
+  renderTitle();
+};
+
 function loadGame() {
   // implicit window.
+  removeEventListener('keydown', newGame);
+  removeEventListener('resize', renderTitle);
   addEventListener('keydown', keyPressed);
   addEventListener('keyup', keyReleased);
   addEventListener('gamepadconnected', gamepadConnected);
@@ -238,7 +247,7 @@ function loadGame() {
 };
 
 function loadLevel(level) {
-  bg_ctx.fillStyle = "#000";
+  bg_ctx.fillStyle = BLACK;
   bg_ctx.fillRect(0, 0, bg.width, bg.height);
 
   let x, y;
@@ -314,6 +323,13 @@ function loop() {
   }
 };
 
+function newGame(keyEvent) {
+  switch (keyEvent.which) {
+    case 13: // Enter
+      loadGame();
+  }
+};
+
 function render() {
   // render level
   buffer_ctx.drawImage(bg, 0, 0);
@@ -362,6 +378,29 @@ function renderText(text, x, y, ctx = buffer_ctx) {
       x + i*(CHARSET_SIZE), y, CHARSET_SIZE, CHARSET_SIZE
     );
   }
+};
+
+function renderTitle() {
+  requestAnimationFrame(function() {
+    buffer_ctx.fillStyle = BLACK;
+    buffer_ctx.fillRect(0, 0, buffer.width, buffer.height);
+
+    renderText(document.title.toLowerCase(), 0, 0);
+
+    renderText('you are cursed. locked', 0, 2*CHARSET_SIZE);
+    renderText('in an ever repeating', 0, 3*CHARSET_SIZE);
+    renderText('room. unravel its' , 0, 4*CHARSET_SIZE);
+    renderText('mysteries to lift the' , 0, 5*CHARSET_SIZE);
+    renderText('curse and break free.' , 0, 6*CHARSET_SIZE);
+
+    renderText('press enter to start,' , 0, 9*CHARSET_SIZE);
+    renderText('arrows or wasd to move' , 0, 10*CHARSET_SIZE);
+
+    renderText('by jerome lecomte' , 0, 13*CHARSET_SIZE);
+    renderText('for cga-jam 2017' , 0, 14*CHARSET_SIZE);
+
+    blit();
+  });
 };
 
 function resetLevel() {
