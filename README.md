@@ -1,7 +1,7 @@
 # Deja Vu 
 
 My game entry for CGA Jam 2017 on the theme "History repeats", 
-Deja Vu is a short game completable in the duration of Jupiter Adley's attention span.
+Deja Vu is a short game completable in the duration of Jupiter Hadley's attention span (1 minute).
 http://itch.io/jam/cga-jam
 
 # How to play
