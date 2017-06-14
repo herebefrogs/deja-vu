@@ -64,8 +64,6 @@ let entities;
 let animatedEntities;
 let hero;
 let ITEMS_HEIGHT;
-let KEY_WIDTH;
-let SWORD_WIDTH;
 let lastTime;
 let requestId;
 let resetDoor;
@@ -284,22 +282,19 @@ function loadLevel(level) {
   // TODO make that ugly math nicer to look at
   // pre-render inventory on background
   ITEMS_HEIGHT = y*SPRITE_SIZE + CHARSET_SIZE/2;
-  const itemsWidth = 6*CHARSET_SIZE;
-  KEY_WIDTH = itemsWidth + SPRITE_SIZE;
-  SWORD_WIDTH = KEY_WIDTH + 2*SPRITE_SIZE;
 
   renderText('items', 0, ITEMS_HEIGHT, bg_ctx);
   let sprite = atlas.key.sprites[0];
   bg_ctx.drawImage(
     tileset,
     sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
-    itemsWidth, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
+    WIDTH - 5*SPRITE_SIZE, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
   );
   sprite = atlas.sword.sprites[0];
   bg_ctx.drawImage(
     tileset,
     sprite.x, sprite.y, SPRITE_SIZE, SPRITE_SIZE,
-    SWORD_WIDTH - SPRITE_SIZE, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
+    WIDTH - 2*SPRITE_SIZE, ITEMS_HEIGHT - CHARSET_SIZE/2, SPRITE_SIZE, SPRITE_SIZE
   );
 };
 
@@ -344,8 +339,8 @@ function render() {
   }
 
   // render items
-  renderText(`x${hero.items.now.key}`, KEY_WIDTH, ITEMS_HEIGHT);
-  renderText(`x${hero.items.now.sword}`, SWORD_WIDTH, ITEMS_HEIGHT);
+  renderText(`x${hero.items.now.key}`, WIDTH - 4*SPRITE_SIZE, ITEMS_HEIGHT);
+  renderText(`x${hero.items.now.sword}`, WIDTH - SPRITE_SIZE, ITEMS_HEIGHT);
 
   blit();
 };
