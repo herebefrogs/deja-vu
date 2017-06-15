@@ -181,6 +181,8 @@ function keyPressed(keyEvent) {
     case 87: // Z - AZERTY
       hero.moveUp = -1;
       hero.moveLeft = hero.moveRight = 0;
+      // prevent itch.io from scrolling the page up/down
+      keyEvent.preventDefault();
       break;
     case 39: // Right arrow
     case 68: // D
@@ -191,6 +193,8 @@ function keyPressed(keyEvent) {
     case 83: // S
       hero.moveDown = 1;
       hero.moveLeft = hero.moveRight = 0;
+      // prevent itch.io from scrolling the page up/down
+      keyEvent.preventDefault();
       break;
     case 80: // P
       toggleLoop(!running);
