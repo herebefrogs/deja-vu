@@ -8,6 +8,7 @@ const HEIGHT = 160;
 const WIDTH = 176;
 const SPRITE_SIZE = 16;
 const CHARSET_SIZE = 8; // width & height in pixel of each letter in charset image
+const FRAME_DURATION = 0.1; // in seconds
 const atlas = {
   block: { sprites: { initial: { x: 48, y: 16 } } },
   chest: {
@@ -25,13 +26,37 @@ const atlas = {
   door_east: { sprites: { initial: { x: 32, y: 16 } } },
   door_north: { sprites: { initial: { x: 0, y: 16 } } },
   door_south: { sprites: { initial: { x: 16, y: 16 } } },
-  sword: { sprites: [ { x: 32, y: 0 } ] },
   hero: {
     speed: 30,
     bounds: { x: 2, y: 1, w: 13, h: 15 },
     sprites: { initial: { x: 0, y: 0 } }
   },
-  key: { sprites: [ { x: 16, y: 0 } ] },
+  key: {
+    sprites: [
+      { x: 16, y: 0 },
+      { x: 0, y: 32 },
+      { x: 16, y: 32 },
+      { x: 32, y: 32 },
+      { x: 48, y: 32 },
+      { x: 64, y: 32 },
+      { x: 80, y: 32 },
+      { x: 96, y: 32 },
+      { x: 16, y: 0 }
+    ]
+  },
+  sword: {
+    sprites: [
+      { x: 32, y: 0 },
+      { x: 0, y: 48 },
+      { x: 16, y: 48 },
+      { x: 32, y: 48 },
+      { x: 48, y: 48 },
+      { x: 64, y: 48 },
+      { x: 80, y: 48 },
+      { x: 96, y: 48 },
+      { x: 32, y: 0 }
+    ]
+  },
   tile: { sprites: { initial: { x: 64, y: 16 } } },
   wall_h: { sprites: { initial: { x: 80, y: 16 } } },
   wall_v: { sprites: { initial: { x: 96, y: 16 } } }
@@ -54,7 +79,6 @@ const buffer = document.createElement('canvas');
 const buffer_ctx = buffer.getContext('2d');
 const bg = document.createElement('canvas');
 const bg_ctx = bg.getContext('2d');
-const FRAME_DURATION = 0.4; // in seconds
 let charset = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUgAAAAICAYAAACbO2brAAAB5klEQVR42uVa2YrDMAw07Fvf9v8/tqWwhTZY18zI9tJAWlLHiqJjPHI1fm8/d/Qcf4c3js6t6JAdUz0T1eeqR1WX2RxLTsY3nh7s/BPP7DspZGbsw+iS0bUSi6gt0Pcf4oOR7+bX88M6Xjd1jL87cNXzo2vF8yP5M4DMzp9dWzaM7HsNCPX8Dv/svq7YSGXfyng2NqJ7Mr5Vvb8SIBHZr3mWPUc1gLsB5P33bwRIhf3+6/gOgNs1v0IQojzxYgPJrysDVfqPAUmPHXoAmWHY5kLR4WDPAYoEt+RbhsisgDM5MwMrAJQByJMZWHeCIfMzMVqNj4h9VfMnC4CI/hkZWYC24r9iX5bpWfMigIwYrJmnqxlEJ4NEACwCSFS+l0AewF+/T2VAEYBUFjJFfFl2VJSAlg8rDBBlcSiAov7PgoiVH0j8ZBgiM474F2IwihK1k0Eie3irtxgY+yifn9njUpSI0QrP7nGx9mf1W72FU8kDRfwp7OPlsYIhsiW2t+iPXQ5mAvyEAGZLLBQgmT9pvH/Su/bY0BKoAyAt+50M4Ih9WYas8F9Fv26ArJbuHxUI0+aws82nugnLtHFU2xtWtqlU2zSybRJM6wjS5sG0kTD+725z6Y6FqI1I1YbTPd5ZYmfbg2ZyHuewlwnHUW0vAAAAAElFTkSuQmCC';
 let currentTime;
 let entryDoor;
