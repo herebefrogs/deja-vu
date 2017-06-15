@@ -1,4 +1,3 @@
-import rand from './util';
 import { gamepad, gamepadConnected, gamepadDisconnected, gamepadPollData } from './gamepad';
 
 document.title = 'Deja Vu';
