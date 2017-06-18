@@ -28,7 +28,6 @@ const atlas = {
   door_south: { sprites: [ { x: 16, y: 16 } ] },
   hero: {
     speed: 30,
-    bounds: { x: 2, y: 1, w: 13, h: 15 },
     sprites: [ { x: 0, y: 0 } ]
   },
   key: {
@@ -135,7 +134,7 @@ function createEntity(type, x, y, item) {
 
 function createHero() {
   return {
-    bounds: atlas.hero.bounds,
+    lastInput: null,
     moveDown: 0,
     moveLeft: 0,
     moveRight: 0,
@@ -186,59 +185,63 @@ function init() {
 };
 
 function keyPressed(keyEvent) {
-  switch (keyEvent.which) {
-    case 37: // Left arrow
-    case 65: // A - QWERTY
-    case 81: // Q - AZERTY
-      hero.moveLeft = -1;
-      hero.moveUp = hero.moveDown = 0;
-      break;
-    case 38: // Up arrow
-    case 90: // W - QWERTY
-    case 87: // Z - AZERTY
-      hero.moveUp = -1;
-      hero.moveLeft = hero.moveRight = 0;
-      // prevent itch.io from scrolling the page up/down
-      keyEvent.preventDefault();
-      break;
-    case 39: // Right arrow
-    case 68: // D
-      hero.moveRight = 1;
-      hero.moveUp = hero.moveDown = 0;
-      break;
-    case 40: // Down arrow
-    case 83: // S
-      hero.moveDown = 1;
-      hero.moveLeft = hero.moveRight = 0;
-      // prevent itch.io from scrolling the page up/down
-      keyEvent.preventDefault();
-      break;
-    case 80: // P
+  if (keyEvent.which === 80) { // P
       toggleLoop(!running);
-      break;
+  }
+  else if (!hero.lastInput) {
+    switch (keyEvent.which) {
+      case 37: // Left arrow
+      case 65: // A - QWERTY
+      case 81: // Q - AZERTY
+        hero.moveLeft = -1;
+        hero.lastInput = keyEvent.which;
+        break;
+      case 38: // Up arrow
+      case 90: // W - QWERTY
+      case 87: // Z - AZERTY
+        hero.moveUp = -1;
+        hero.lastInput = keyEvent.which;
+        // prevent itch.io from scrolling the page up/down
+        keyEvent.preventDefault();
+        break;
+      case 39: // Right arrow
+      case 68: // D
+        hero.moveRight = 1;
+        hero.lastInput = keyEvent.which;
+        break;
+      case 40: // Down arrow
+      case 83: // S
+        hero.moveDown = 1;
+        hero.lastInput = keyEvent.which;
+        // prevent itch.io from scrolling the page up/down
+        keyEvent.preventDefault();
+        break;
+    }
   }
 };
 
 function keyReleased(keyEvent) {
-  switch (keyEvent.which) {
-    case 37: // Left arrow
-    case 65: // A - QWERTY
-    case 81: // Q - AZERTY
-      hero.moveLeft = 0;
-      break;
-    case 38: // Up arrow
-    case 90: // W - QWERTY
-    case 87: // Z - AZERTY
-      hero.moveUp = 0;
-      break;
-    case 39: // Right arrow
-    case 68: // D
-      hero.moveRight = 0;
-      break;
-    case 40: // Down arrow
-    case 83: // S
-      hero.moveDown = 0;
-      break;
+  if (hero.lastInput === keyEvent.which) {
+    switch (keyEvent.which) {
+      case 37: // Left arrow
+      case 65: // A - QWERTY
+      case 81: // Q - AZERTY
+        hero.lastInput = null;
+        break;
+      case 38: // Up arrow
+      case 90: // W - QWERTY
+      case 87: // Z - AZERTY
+        hero.lastInput = null;
+        break;
+      case 39: // Right arrow
+      case 68: // D
+        hero.lastInput = null;
+        break;
+      case 40: // Down arrow
+      case 83: // S
+        hero.lastInput = null;
+        break;
+    }
   }
 };
 
@@ -445,10 +448,9 @@ function resize() {
   bg_ctx.mozImageSmoothingEnabled = buffer_ctx.imageSmoothingEnabled = ctx.imageSmoothingEnabled = false;
 };
 
-function setEntityPosition(entity, elapsedTime) {
-  const distance = entity.speed * elapsedTime;
-  entity.x += distance * (entity.moveLeft + entity.moveRight);
-  entity.y += distance * (entity.moveUp + entity.moveDown);
+function setHeroPosition(elapsedTime) {
+  hero.x += SPRITE_SIZE * (hero.moveLeft + hero.moveRight);
+  hero.y += SPRITE_SIZE * (hero.moveUp + hero.moveDown);
 };
 
 function toggleLoop(value) {
@@ -471,27 +473,27 @@ function unloadGame() {
 };
 
 function update(elapsedTime) {
-  setEntityPosition(hero, elapsedTime);
+  setHeroPosition(elapsedTime);
 
   // collision test between hero and all the entities previous positions
   for (let entity of entities) {
     if (entity === hero) continue;
 
     if (entity === entryDoor) {
-      if (hero.y + hero.bounds.y < entryDoor.y) {
-        hero.y = entryDoor.y - hero.bounds.y;
+      if (hero.y < entryDoor.y) {
+        hero.y = entryDoor.y;
       }
       continue;
     }
     if (entity === resetDoor) {
-      if (hero.y + hero.bounds.h > resetDoor.y + SPRITE_SIZE) {
+      if (hero.y > resetDoor.y) {
         // history repeats!
         resetLevel();
       }
       continue;
     }
     if (entity === exitDoor) {
-      if (hero.x + hero.bounds.w > exitDoor.x + SPRITE_SIZE) {
+      if (hero.x > exitDoor.x) {
         endGame();
       }
       continue;
@@ -499,23 +501,22 @@ function update(elapsedTime) {
 
     // AABB collision test
     if (entity.collide &&
-        hero.x + hero.bounds.x < entity.x + SPRITE_SIZE &&
-        hero.x + hero.bounds.w > entity.x &&
-        hero.y + hero.bounds.y < entity.y + SPRITE_SIZE &&
-        hero.y + hero.bounds.h > entity.y) {
+        hero.x < entity.x + SPRITE_SIZE &&
+        hero.x + SPRITE_SIZE > entity.x &&
+        hero.y < entity.y + SPRITE_SIZE &&
+        hero.y + SPRITE_SIZE > entity.y) {
        // collision!
-       // FIXME doesn't work for diagonal move :(
        if (hero.moveRight) {
-         hero.x -= hero.x + hero.bounds.w - entity.x;
+         hero.x -= hero.x + SPRITE_SIZE - entity.x;
        }
        if (hero.moveLeft) {
-         hero.x += entity.x + SPRITE_SIZE - hero.x - hero.bounds.x;
+         hero.x += entity.x + SPRITE_SIZE - hero.x;
        }
        if (hero.moveDown) {
-         hero.y -= hero.y + hero.bounds.h - entity.y;
+         hero.y -= hero.y + SPRITE_SIZE - entity.y;
        }
        if (hero.moveUp) {
-         hero.y += entity.y + SPRITE_SIZE - hero.y - hero.bounds.y;
+         hero.y += entity.y + SPRITE_SIZE - hero.y;
        }
       if (entity.type === 'chest' &&
           entity.initialState &&
@@ -559,4 +560,7 @@ function update(elapsedTime) {
       }
     }
   }
+
+  // "consume" this keydown move
+  hero.moveLeft = hero.moveRight = hero.moveUp = hero.moveDown = 0;
 };
