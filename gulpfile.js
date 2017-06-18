@@ -15,7 +15,7 @@ var fs = require('fs'),
     sourcemaps = require('gulp-sourcemaps');
     uglify = require('gulp-uglify'),
     zip = require('gulp-zip'),
-    exclude_min = [ /*'js/ga.min.js', 'js/jsfxr.min.js' */];
+    exclude_min = [ /* 'js/jsfxr.min.js' */];
     config = { js: [] };
 
 

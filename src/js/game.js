@@ -1,3 +1,5 @@
+import ga from './ga.min';
+
 document.title = 'Deja Vu';
 
 // global variables
@@ -134,11 +136,7 @@ function createEntity(type, x, y, item) {
 
 function createHero() {
   return {
-    lastInput: null,
-    moveDown: 0,
-    moveLeft: 0,
-    moveRight: 0,
-    moveUp: 0,
+    initialState: true,
     items: {
       now: {
         key: 1,
@@ -149,8 +147,14 @@ function createHero() {
         sword: 0
       }
     },
+    lastInput: null,
+    moveDown: 0,
+    moveLeft: 0,
+    moveRight: 0,
+    moveUp: 0,
+    nbLevelResets: 0,
+    nbMoves: 0,
     speed: atlas.hero.speed,
-    initialState: true,
     type: 'hero',
     x: entryDoor.x,
     y: entryDoor.y
@@ -161,6 +165,7 @@ function endGame() {
   renderText('you won!', (exitDoor.x+SPRITE_SIZE)/2 - 4*CHARSET_SIZE, exitDoor.y + CHARSET_SIZE/2);
   blit();
   toggleLoop(false);
+  ga('send', 'event', 'deja-vu|level:1', 'game end', `level resets:${hero.nbLevelResets}|moves:${hero.nbMoves}`);
 }
 
 function init() {
@@ -249,6 +254,7 @@ function loadTitle() {
   addEventListener('keydown', newGame);
   addEventListener('resize', renderTitle);
   renderTitle();
+  ga('send', 'event', 'deja-vu|splash screen');
 };
 
 function loadGame() {
@@ -264,6 +270,7 @@ function loadGame() {
   loadLevel(level);
 
   toggleLoop(true);
+  ga('send', 'event', 'deja-vu|level:1', 'game start');
 };
 
 function loadLevel(level) {
@@ -422,6 +429,8 @@ function renderTitle() {
 };
 
 function resetLevel() {
+  hero.nbLevelResets++;
+  hero.nbMoves++;
   // move hero back
   hero.y = entryDoor.y;
   // reset his current items to max items
@@ -473,6 +482,8 @@ function unloadGame() {
 };
 
 function update(elapsedTime) {
+  const x = hero.x;
+  const y = hero.y;
   setHeroPosition(elapsedTime);
 
   // collision test between hero and all the entities previous positions
@@ -489,12 +500,14 @@ function update(elapsedTime) {
       if (hero.y > resetDoor.y) {
         // history repeats!
         resetLevel();
+        return;
       }
       continue;
     }
     if (entity === exitDoor) {
       if (hero.x > exitDoor.x) {
         endGame();
+        return;
       }
       continue;
     }
@@ -563,4 +576,7 @@ function update(elapsedTime) {
 
   // "consume" this keydown move
   hero.moveLeft = hero.moveRight = hero.moveUp = hero.moveDown = 0;
+  if (x !== hero.x || y !== hero.y) {
+    hero.nbMoves++;
+  }
 };
