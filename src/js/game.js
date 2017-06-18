@@ -1,5 +1,3 @@
-import { gamepad, gamepadConnected, gamepadDisconnected, gamepadPollData } from './gamepad';
-
 document.title = 'Deja Vu';
 
 // global variables
@@ -110,13 +108,6 @@ function blit() {
 };
 
 function changeVisibility(e) {
-  // event target is document object
-  if (e.target.hidden && gamepad) {
-    // ¯\_(ツ)_/¯ Chrome also stop sending data for the cached gamepad after changing tab
-    // so clear the cached gamepad
-    gamepadDisconnected({ gamepad: { index: gamepad.index, connected: false }});
-  }
-
   toggleLoop(!event.target.hidden);
 };
 
@@ -263,8 +254,6 @@ function loadGame() {
   removeEventListener('resize', renderTitle);
   addEventListener('keydown', keyPressed);
   addEventListener('keyup', keyReleased);
-  addEventListener('gamepadconnected', gamepadConnected);
-  addEventListener('gamepaddisconnected', gamepadDisconnected);
   document.addEventListener('visibilitychange', changeVisibility);
 
   entities = [];
@@ -476,36 +465,12 @@ function unloadGame() {
   // implicit window.
   removeEventListener('keydown', keyPressed);
   removeEventListener('keyup', keyReleased);
-  removeEventListener('gamepadconnected', gamepadConnected);
-  removeEventListener('gamepaddisconnected', gamepadDisconnected);
   document.removeEventListener('visibilitychange', changeVisibility);
 
   toggleLoop(false);
 };
 
 function update(elapsedTime) {
-  // TODO extract that into a function
-  const gamepadData = gamepadPollData();
-  if (gamepadData) {
-    // once connected, gamepad overrides keyboard inputs
-    if (gamepadData.leftX <= 0) {
-      // TODO maybe this would be simpler if moveLeft & moveRight
-      // were merged into a single value [-1, 1]
-      hero.moveLeft = gamepadData.leftX;
-      hero.moveRight = 0;
-    } else {
-      hero.moveLeft = 0;
-      hero.moveRight = gamepadData.leftX;
-    }
-    if (gamepadData.leftY <= 0) {
-      hero.moveUp = gamepadData.leftY;
-      hero.moveDown = 0;
-    } else {
-      hero.moveUp = 0;
-      hero.moveDown = gamepadData.leftY;
-    }
-  }
-
   setEntityPosition(hero, elapsedTime);
 
   // collision test between hero and all the entities previous positions
